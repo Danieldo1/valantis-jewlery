@@ -16,7 +16,7 @@ const PleaseWait = () => {
     }, 500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [dotsArray]);
 
   useEffect(() => {
     const textInterval = setInterval(() => {

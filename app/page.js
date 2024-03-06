@@ -10,14 +10,14 @@ import { SvgSpinnersClock } from "../components/Loading";
 import {
   FaArrowAltCircleRight,
   FaArrowAltCircleLeft,
-  FaArrowAltCircleUp,
 } from "react-icons/fa";
 import ItemComponent from "@/components/ItemComponent";
 
 import PleaseWait from "@/components/PleaseWait";
 import { CgSpinner } from "react-icons/cg";
 import { useRouter } from "next/navigation";
-
+export const dynamic = "force-dynamic";
+export const revalidate = 0
 const ITEMS_PER_PAGE = 50;
 
 export default function Home() {
@@ -28,7 +28,6 @@ export default function Home() {
   const [brands, setBrands] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [maxPrice, setMaxPrice] = useState(0);
-  // const [filteredItems, setFilteredItems] = useState([]);
   const [buttonColor, setButtonColor] = useState(
     "bg-blue-500 hover:bg-blue-600"
   );
@@ -38,7 +37,7 @@ const router = useRouter();
 
   useEffect(() => {
     fetchIds();
-  }, [currentPage]);
+  }, [currentPage,]);
 
   const fetchIds = async () => {
     setLoading(true);
@@ -197,7 +196,7 @@ const router = useRouter();
           {items && items.length > 0 ? (
             <div className="mb-5">
               {items.map((item) => (
-                <ItemComponent item={item} />
+                <ItemComponent item={item} key={item.id} />
               ))}
             </div>
           ) : (

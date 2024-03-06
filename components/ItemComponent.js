@@ -1,9 +1,9 @@
 import React from 'react'
 
-const ItemComponent = ({ item }) => {
+const ItemComponent = ({ item, }) => {
   return (
     <div
-      key={item.id}
+      
       className="flex cursor-pointer hover:scale-105  hover:shadow-transparent transition-all delay-100 ease-in-out flex-col gap-2 my-2 p-5 border border-gray-800 bg-gray-200 rounded-md shadow-md"
     >
       <p className="text-center font-bold py-4 border-b border-gray-800">
