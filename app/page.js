@@ -3,16 +3,16 @@ import { useState, useEffect } from "react";
 import {
   getIds,
   getItems,
-  getField,
   getBrands,
   getFilterIds,
 } from "../lib/actions/items.action";
 import { SvgSpinnersClock } from "../components/Loading";
 import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from "react-icons/fa";
 import ItemComponent from "@/components/ItemComponent";
-import { useRouter } from "next/navigation";
+
 import PleaseWait from "@/components/PleaseWait";
 import { CgSpinner } from "react-icons/cg";
+import { useRouter } from "next/navigation";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -24,55 +24,57 @@ export default function Home() {
   const [brands, setBrands] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [maxPrice, setMaxPrice] = useState(0);
-  const [filteredItems, setFilteredItems] = useState([]);
+  // const [filteredItems, setFilteredItems] = useState([]);
   const [buttonColor, setButtonColor] = useState(
     "bg-blue-500 hover:bg-blue-600"
   );
-  const[btnLoading, setBtnLoading] = useState(false);
+  const [btnLoading, setBtnLoading] = useState(false);
+const router = useRouter();
 
-  const router = useRouter();
   useEffect(() => {
-    const fetchIds = async () => {
-      setLoading(true);
-      const offset = currentPage * ITEMS_PER_PAGE;
-      const fetchedIds = await getIds(offset, ITEMS_PER_PAGE);
-      const uniqueIds = Array.from(new Set(fetchedIds.result));
-      setIds(uniqueIds);
-    };
-
     fetchIds();
   }, [currentPage]);
 
+  const fetchIds = async () => {
+    setLoading(true);
+    const offset = currentPage * ITEMS_PER_PAGE;
+    const fetchedIds = await getIds(offset, ITEMS_PER_PAGE);
+    const uniqueIds = Array.from(new Set(fetchedIds.result));
+    setIds(uniqueIds);
+  };
+
   useEffect(() => {
     if (ids.length > 0) {
-      const fetchItems = async () => {
-        const fetchedItems = await getItems(ids);
-        const uniqueItems = fetchedItems.result.filter(
-          (item, index, self) =>
-            index === self.findIndex((t) => t.id === item.id)
-        );
-        setItems(uniqueItems);
-        setLoading(false);
-      };
-
       fetchItems();
     }
   }, [ids]);
 
-  useEffect(() => {
-    const fetchBrands = async () => {
-      const brandsData = await getBrands();
-      const nonNullBrands = brandsData.result.filter((brand) => brand !== null);
-      const uniqueBrandNames = [...new Set(nonNullBrands)];
-      const updatedBrands = [
-        { name: "Uncategorised", value: null },
-        ...uniqueBrandNames.map((name) => ({ name, value: name })),
-      ];
+  const fetchItems = async () => {
+    const fetchedItems = await getItems(ids);
+    const uniqueItems = fetchedItems.result.filter(
+      (item, index, self) => index === self.findIndex((t) => t.id === item.id)
+    );
+    setItems(uniqueItems);
+    setLoading(false);
+  };
 
-      setBrands(updatedBrands);
-    };
+  useEffect(() => {
     fetchBrands();
-  }, []);
+  }, [items]);
+
+  const fetchBrands = async () => {
+    
+    const brandsData = await getBrands();
+    const nonNullBrands = brandsData.result.filter((brand) => brand !== null);
+    const uniqueBrandNames = [...new Set(nonNullBrands)];
+    const updatedBrands = [
+      { name: "All", value: null },
+      ...uniqueBrandNames.map((name) => ({ name, value: name })),
+    ];
+
+    setBrands(updatedBrands);
+   
+  };
 
   const handleBrandChange = (event) => {
     setSelectedBrand(event.target.value);
@@ -103,9 +105,10 @@ export default function Home() {
     setIds([]);
     setSelectedBrand(null);
     setMaxPrice(0);
-    setFilteredItems([]);
     setButtonColor("bg-blue-500 hover:bg-blue-600");
-    router.push("/");
+    fetchIds();
+    fetchItems();
+    router.refresh();
   };
 
   const isBrowser = () => typeof window !== "undefined";
@@ -165,7 +168,11 @@ export default function Home() {
               onClick={handleFilter}
               className={`${buttonColor} flex justify-center items-center text-white font-bold py-2 px-4 rounded my-5`}
             >
-              {btnLoading ? <CgSpinner className="animate-spin w-8 h-8 text-black" /> : "Apply Filter"}
+              {btnLoading ? (
+                <CgSpinner className="animate-spin w-8 h-8 text-black" />
+              ) : (
+                "Apply Filter"
+              )}
             </button>
             <button
               type="button"
@@ -178,12 +185,14 @@ export default function Home() {
           <h2 className="text-xl font-bold text-center my-4">
             {selectedBrand ? `Brand: ${selectedBrand}` : "All Products"}
           </h2>
-          {items && (
+          {items && items.length > 0 ? (
             <div className="mb-5">
               {items.map((item) => (
                 <ItemComponent item={item} />
               ))}
             </div>
+          ) : (
+            <p className="text-center">No items found</p>
           )}
           {items && items.length > 0 && (
             <div className="flex items-center justify-between mb-5">

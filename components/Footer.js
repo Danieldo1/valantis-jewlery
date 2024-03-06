@@ -2,12 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
-import {
-  FaInstagram,
-  FaFacebookF,
-  FaTwitter,
-  FaPinterestP,
-} from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaGithub, FaReact } from "react-icons/fa";
+import Link from "next/link";
 
 const Footer = () => {
   return (
@@ -28,18 +24,40 @@ const Footer = () => {
           </span>
         </p>
         <span className="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
-          <a className="text-gray-500 cursor-pointer hover:scale-110">
+          <Link
+            href={"https://www.facebook.com/daniel.speranskiy1/"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-500 cursor-pointer hover:scale-110"
+          >
             <FaFacebookF />
-          </a>
-          <a className="ml-3 text-gray-500 cursor-pointer hover:scale-110">
-            <FaTwitter />
-          </a>
-          <a className="ml-3 text-gray-500 cursor-pointer hover:scale-110">
+          </Link>
+          <Link
+            href={"https://github.com/Danieldo1"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-3 text-gray-500 cursor-pointer hover:scale-110"
+          >
+            <FaGithub />
+          </Link>
+          <Link
+            href={
+              "https://www.instagram.com/dani8l_sp/?igshid=NzZlODBkYWE4Ng%3D%3D&utm_source=qr"
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-3 text-gray-500 cursor-pointer hover:scale-110"
+          >
             <FaInstagram />
-          </a>
-          <a className="ml-3 text-gray-500 cursor-pointer hover:scale-110">
-            <FaPinterestP />
-          </a>
+          </Link>
+          <Link
+            href={"https://www.dansper.live/"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-3 text-gray-500 cursor-pointer hover:scale-110"
+          >
+            <FaReact />
+          </Link>
         </span>
       </div>
       <div className="container px-5 py-4 mx-auto flex items-center sm:flex-row flex-col">
