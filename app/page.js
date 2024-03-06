@@ -7,7 +7,11 @@ import {
   getFilterIds,
 } from "../lib/actions/items.action";
 import { SvgSpinnersClock } from "../components/Loading";
-import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from "react-icons/fa";
+import {
+  FaArrowAltCircleRight,
+  FaArrowAltCircleLeft,
+  FaArrowAltCircleUp,
+} from "react-icons/fa";
 import ItemComponent from "@/components/ItemComponent";
 
 import PleaseWait from "@/components/PleaseWait";
@@ -19,7 +23,7 @@ const ITEMS_PER_PAGE = 50;
 export default function Home() {
   const [ids, setIds] = useState([]);
   const [items, setItems] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -29,6 +33,7 @@ export default function Home() {
     "bg-blue-500 hover:bg-blue-600"
   );
   const [btnLoading, setBtnLoading] = useState(false);
+  const [filterSelected, setFilterSelected] = useState(false);
 const router = useRouter();
 
   useEffect(() => {
@@ -83,10 +88,12 @@ const router = useRouter();
         ? "bg-green-400 hover:bg-green-500"
         : "bg-blue-500 hover:bg-blue-600"
     );
+    setFilterSelected(true);
   };
 
   const handleMaxPriceChange = (event) => {
     setMaxPrice(event.target.value);
+    setFilterSelected(true);
   };
 
   const handleFilter = async () => {
@@ -106,6 +113,8 @@ const router = useRouter();
     setSelectedBrand(null);
     setMaxPrice(0);
     setButtonColor("bg-blue-500 hover:bg-blue-600");
+    setCurrentPage(0);
+    setFilterSelected(false);
     fetchIds();
     fetchItems();
     router.refresh();
@@ -163,7 +172,7 @@ const router = useRouter();
               />
             </div>
           </div>
-          <div className="flex flex-col ">
+          <div className={`flex flex-col ${filterSelected ? "" : "hidden"}`}>
             <button
               onClick={handleFilter}
               className={`${buttonColor} flex justify-center items-center text-white font-bold py-2 px-4 rounded my-5`}
