@@ -9,6 +9,10 @@ import {
 } from "../lib/actions/items.action";
 import { SvgSpinnersClock } from "../components/Loading";
 import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from "react-icons/fa";
+import ItemComponent from "@/components/ItemComponent";
+import { useRouter } from "next/navigation";
+import PleaseWait from "@/components/PleaseWait";
+import { CgSpinner } from "react-icons/cg";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -17,7 +21,16 @@ export default function Home() {
   const [items, setItems] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [brands, setBrands] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [maxPrice, setMaxPrice] = useState(0);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [buttonColor, setButtonColor] = useState(
+    "bg-blue-500 hover:bg-blue-600"
+  );
+  const[btnLoading, setBtnLoading] = useState(false);
 
+  const router = useRouter();
   useEffect(() => {
     const fetchIds = async () => {
       setLoading(true);
@@ -46,50 +59,129 @@ export default function Home() {
     }
   }, [ids]);
 
+  useEffect(() => {
+    const fetchBrands = async () => {
+      const brandsData = await getBrands();
+      const nonNullBrands = brandsData.result.filter((brand) => brand !== null);
+      const uniqueBrandNames = [...new Set(nonNullBrands)];
+      const updatedBrands = [
+        { name: "Uncategorised", value: null },
+        ...uniqueBrandNames.map((name) => ({ name, value: name })),
+      ];
+
+      setBrands(updatedBrands);
+    };
+    fetchBrands();
+  }, []);
+
+  const handleBrandChange = (event) => {
+    setSelectedBrand(event.target.value);
+    setButtonColor(
+      event.target.value
+        ? "bg-green-400 hover:bg-green-500"
+        : "bg-blue-500 hover:bg-blue-600"
+    );
+  };
+
+  const handleMaxPriceChange = (event) => {
+    setMaxPrice(event.target.value);
+  };
+
+  const handleFilter = async () => {
+    setBtnLoading(true);
+    const params = {
+      ...(selectedBrand && { brand: selectedBrand }),
+      ...(maxPrice && { price: parseFloat(maxPrice) }),
+    };
+    const filterResult = await getFilterIds(params);
+    const ids = filterResult.result;
+    setIds(ids);
+    setBtnLoading(false);
+  };
+
+  const handleClearFilter = () => {
+    setIds([]);
+    setSelectedBrand(null);
+    setMaxPrice(0);
+    setFilteredItems([]);
+    setButtonColor("bg-blue-500 hover:bg-blue-600");
+    router.push("/");
+  };
+
+  const isBrowser = () => typeof window !== "undefined";
+  function scrollToTop() {
+    if (!isBrowser()) return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   const handlePreviousPage = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 0));
+    scrollToTop();
   };
 
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
+    scrollToTop();
   };
 
   return (
-    <section className="flex flex-col  gap-4 h-full bg-stone-50 max-w-md md:max-w-xl lg:max-w-2xl xl:max-w-3xl mx-auto">
+    <section className="flex flex-col px-5  h-full bg-stone-50 max-w-md md:max-w-xl lg:max-w-2xl xl:max-w-3xl mx-auto">
       {loading && items ? (
-        <div className="relative w-full h-[70vh] flex justify-center items-center">
+        <div className="relative w-full flex flex-col h-[70vh]  justify-center items-center">
           <SvgSpinnersClock />
+          <PleaseWait />
         </div>
       ) : (
         <>
-
-        <h2 className="text-xl font-bold text-center">All Products</h2>
-        
+          <div className="flex flex-col">
+            <div className=" flex flex-col ">
+              <label className="font-bold text-sm tracking-wide">Brand</label>
+              <select
+                onChange={handleBrandChange}
+                value={selectedBrand || ""}
+                className="border border-gray-300 rounded h-10"
+              >
+                {brands.map((brand, index) => (
+                  <option key={index} value={brand.value}>
+                    {brand.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col ">
+              <label className="font-bold text-sm tracking-wide pt-5">
+                Max Price
+              </label>
+              <input
+                type="number"
+                placeholder="Max price"
+                value={maxPrice}
+                onChange={handleMaxPriceChange}
+                className="border border-gray-300  rounded h-10"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col ">
+            <button
+              onClick={handleFilter}
+              className={`${buttonColor} flex justify-center items-center text-white font-bold py-2 px-4 rounded my-5`}
+            >
+              {btnLoading ? <CgSpinner className="animate-spin w-8 h-8 text-black" /> : "Apply Filter"}
+            </button>
+            <button
+              type="button"
+              onClick={handleClearFilter}
+              className="bg-gray-400 hover:bg-gray-500 border border-gray-500 text-white font-bold py-2 px-4 rounded"
+            >
+              Clear Filter
+            </button>
+          </div>
+          <h2 className="text-xl font-bold text-center my-4">
+            {selectedBrand ? `Brand: ${selectedBrand}` : "All Products"}
+          </h2>
           {items && (
-            <div>
+            <div className="mb-5">
               {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col gap-2 my-2 p-5 border border-gray-800 bg-gray-200 rounded-md shadow-md"
-                >
-                  <p className="text-center font-bold py-4 border-b border-gray-800">
-                    {item.product}
-                  </p>
-                  <div className="flex justify-between  gap-2">
-                    <p>
-                      <span className="font-bold">Brand:</span>{" "}
-                      {item.brand !== null ? item.brand : "No brand"}
-                    </p>
-                    <p>
-                      <span className="font-bold">Price:</span>{" "}
-                      <span className="font-bold">₽</span>{" "}
-                      {item.price.toLocaleString()}
-                    </p>
-                  </div>
-                  <p className="text-gray-500">
-                    <span className="font-bold">ID:</span> {item.id}
-                  </p>
-                </div>
+                <ItemComponent item={item} />
               ))}
             </div>
           )}
